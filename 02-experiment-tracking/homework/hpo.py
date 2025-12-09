@@ -42,6 +42,7 @@ def run_optimization(data_path: str, num_trials: int):
             rmse = root_mean_squared_error(y_val, y_pred)
             mlflow.log_param("rmse", rmse)
             mlflow.log_metric("rmse", rmse)
+            mlflow.log_params(params)
 
         return {'loss': rmse, 'status': STATUS_OK}
 
