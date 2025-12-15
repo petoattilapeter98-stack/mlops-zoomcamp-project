@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding: utf-8
 
 import pickle
 from pathlib import Path
@@ -11,6 +10,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics import root_mean_squared_error
 
 import mlflow
+from prefect import task, flow
 
 mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("nyc-taxi-experiment")
@@ -19,7 +19,7 @@ models_folder = Path('models')
 models_folder.mkdir(exist_ok=True)
 
 
-
+@task(retries=2)
 def read_dataframe(year, month):
     url = f'https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_{year}-{month:02d}.parquet'
     df = pd.read_parquet(url)
@@ -37,6 +37,7 @@ def read_dataframe(year, month):
     return df
 
 
+@task
 def create_X(df, dv=None):
     categorical = ['PU_DO']
     numerical = ['trip_distance']
@@ -51,6 +52,7 @@ def create_X(df, dv=None):
     return X, dv
 
 
+@task
 def train_model(X_train, y_train, X_val, y_val, dv):
     with mlflow.start_run() as run:
         train = xgb.DMatrix(X_train, label=y_train)
@@ -89,7 +91,8 @@ def train_model(X_train, y_train, X_val, y_val, dv):
         return run.info.run_id
 
 
-def run(year, month):
+@flow(name="taxi-trip-duration-training")
+def taxi_training_flow(year: int, month: int):
     df_train = read_dataframe(year=year, month=month)
 
     next_year = year if month < 12 else year + 1
@@ -104,7 +107,10 @@ def run(year, month):
     y_val = df_val[target].values
 
     run_id = train_model(X_train, y_train, X_val, y_val, dv)
-    print(f"MLflow run_id: {run_id}")
+    
+    with open("run_id.txt", "w") as f:
+        f.write(run_id)
+    
     return run_id
 
 
@@ -116,7 +122,5 @@ if __name__ == "__main__":
     parser.add_argument('--month', type=int, required=True, help='Month of the data to train on')
     args = parser.parse_args()
 
-    run_id = run(year=args.year, month=args.month)
-
-    with open("run_id.txt", "w") as f:
-        f.write(run_id)
+    run_id = taxi_training_flow(year=args.year, month=args.month)
+    print(f"MLflow run_id: {run_id}")
