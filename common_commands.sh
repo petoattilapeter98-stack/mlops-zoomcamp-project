@@ -15,4 +15,7 @@ mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./
 cd 03-orchestration
 conda activate my-exp-tr
 mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./artifacts_local
+
+cd 03-orchestration
+conda activate my-exp-tr
 prefect server start
