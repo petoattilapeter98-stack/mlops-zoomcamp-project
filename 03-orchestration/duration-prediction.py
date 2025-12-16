@@ -12,7 +12,7 @@ from sklearn.metrics import root_mean_squared_error
 import mlflow
 from prefect import task, flow, get_run_logger
 from prefect.tasks import task_input_hash
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 mlflow.set_tracking_uri("http://localhost:5000")
 mlflow.set_experiment("nyc-taxi-experiment")
@@ -145,8 +145,19 @@ def save_run_id(run_id):
     description="Train XGBoost model for NYC taxi trip duration prediction",
     log_prints=True
 )
-def taxi_training_flow(year: int, month: int):
+def taxi_training_flow(year: int = None, month: int = None):
     logger = get_run_logger()
+    
+    # If year/month not provided, use previous month
+    if year is None or month is None:
+        today = datetime.now()
+        if today.month == 1:
+            year = today.year - 1
+            month = 12
+        else:
+            year = today.year
+            month = today.month - 1
+    
     logger.info(f"Starting taxi training flow for {year}-{month:02d}")
     
     # Load data

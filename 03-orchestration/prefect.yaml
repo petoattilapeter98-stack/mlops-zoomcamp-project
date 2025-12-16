@@ -1,0 +1,14 @@
+# Prefect deployment configuration
+# This file defines how the workflow should be deployed and scheduled
+
+deployments:
+  - name: monthly-training
+    entrypoint: duration-prediction.py:taxi_training_flow
+    parameters: {}
+    schedule:
+      cron: "0 8 1 * *"
+      timezone: UTC
+    description: "Monthly training of XGBoost model for NYC taxi trip duration prediction"
+    work_pool:
+      name: default
+
