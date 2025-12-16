@@ -129,18 +129,8 @@ def save_run_id(run_id):
     description="Train XGBoost model for NYC taxi trip duration prediction",
     log_prints=True
 )
-def taxi_training_flow(year: int = None, month: int = None):
+def taxi_training_flow(year, month):
     logger = get_run_logger()
-    
-    # If year/month not provided, use previous month
-    if year is None or month is None:
-        today = datetime.now()
-        if today.month == 1:
-            year = today.year - 1
-            month = 12
-        else:
-            year = today.year
-            month = today.month - 1
     
     logger.info(f"Starting taxi training flow for {year}-{month:02d}")
     
