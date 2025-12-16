@@ -182,3 +182,5 @@ if __name__ == "__main__":
 
     run_id = taxi_training_flow(year=args.year, month=args.month)
     print(f"MLflow run_id: {run_id}")
+
+    local_path = mlflow.artifacts.download_artifacts(run_id=run_id, dst_path="DownloadedModel")
