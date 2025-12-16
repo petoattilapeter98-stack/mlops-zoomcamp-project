@@ -4,7 +4,7 @@ import pickle
 from pathlib import Path
 
 import pandas as pd
-import xgboost as xgb
+from sklearn.linear_model import LinearRegression
 
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics import root_mean_squared_error
@@ -15,10 +15,12 @@ from prefect.tasks import task_input_hash
 from datetime import timedelta, datetime
 
 mlflow.set_tracking_uri("http://localhost:5000")
-mlflow.set_experiment("nyc-taxi-experiment")
+mlflow.set_experiment("03-ho-nyc-taxi-experiment")
+mlflow.sklearn.autolog()
 
 models_folder = Path('models')
 models_folder.mkdir(exist_ok=True)
+
 
 
 @task(
@@ -60,8 +62,7 @@ def create_X(df, dv=None):
     logger.info(f"Creating feature matrix from {len(df)} records")
     
     categorical = ['PULocationID', 'DOLocationID']
-    numerical = ['trip_distance']
-    dicts = df[categorical + numerical].to_dict(orient='records')
+    dicts = df[categorical].to_dict(orient='records')
 
     if dv is None:
         dv = DictVectorizer(sparse=True)
@@ -80,48 +81,35 @@ def create_X(df, dv=None):
 )
 def train_model(X_train, y_train, X_val, y_val, dv):
     logger = get_run_logger()
-    logger.info(f"Training model with {X_train.shape[0]} training samples and {X_val.shape[0]} validation samples")
-    
+    logger.info(f"Training LinearRegression with {X_train.shape[0]} training samples and {X_val.shape[0]} validation samples")
+
     with mlflow.start_run() as run:
-        train = xgb.DMatrix(X_train, label=y_train)
-        valid = xgb.DMatrix(X_val, label=y_val)
+        lr = LinearRegression()
+        lr.fit(X_train, y_train)
+        
+        logger.info(f"Intercept: {lr.intercept_}")
+        mlflow.log_metric("intercept", float(lr.intercept_))
 
-        best_params = {
-            'learning_rate': 0.09585355369315604,
-            'max_depth': 30,
-            'min_child_weight': 1.060597050922164,
-            'objective': 'reg:linear',
-            'reg_alpha': 0.018060244040060163,
-            'reg_lambda': 0.011658731377413597,
-            'seed': 42
-        }
-
-        mlflow.log_params(best_params)
-        logger.info(f"Logged parameters to MLflow")
-
-        booster = xgb.train(
-            params=best_params,
-            dtrain=train,
-            num_boost_round=30,
-            evals=[(valid, 'validation')],
-            early_stopping_rounds=50
-        )
-
-        y_pred = booster.predict(valid)
+        y_pred = lr.predict(X_val)
         rmse = root_mean_squared_error(y_val, y_pred)
         mlflow.log_metric("rmse", rmse)
-        logger.info(f"Model RMSE: {rmse:.4f}")
+        logger.info(f"LinearRegression RMSE: {rmse:.4f}")
 
+        # save the preprocessor
         with open("models/preprocessor.b", "wb") as f_out:
             pickle.dump(dv, f_out)
         mlflow.log_artifact("models/preprocessor.b", artifact_path="preprocessor")
         logger.info(f"Saved preprocessor artifact")
 
-        mlflow.xgboost.log_model(booster, artifact_path="models_mlflow")
-        logger.info(f"Logged XGBoost model to MLflow")
+        # log sklearn model
+        mlflow.sklearn.log_model(lr, artifact_path="model_sklearn")
+        logger.info(f"Logged LinearRegression model to MLflow")
 
         run_id = run.info.run_id
         logger.info(f"MLflow run_id: {run_id}")
+
+        mlflow.register_model( model_uri=f"runs:/{run_id}/model", name = "LinearRegressionModel")
+
         return run_id
 
 

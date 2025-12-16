@@ -1,0 +1,22 @@
+artifact_path: /workspaces/mlops-zoomcamp-project/03-orchestration/artifacts_local/1/models/m-bd54f4770c2a4187be25fce179cdc596/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.9.25
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.6.1
+mlflow_version: 3.1.4
+model_id: m-bd54f4770c2a4187be25fce179cdc596
+model_size_bytes: 3945
+model_uuid: m-bd54f4770c2a4187be25fce179cdc596
+prompts: null
+run_id: fdcb987bcb3b41ce9383e299d8751bf0
+utc_time_created: '2025-12-16 07:39:21.453866'
