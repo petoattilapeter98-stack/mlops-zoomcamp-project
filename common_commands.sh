@@ -19,3 +19,12 @@ mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./
 cd 03-orchestration
 conda activate my-exp-tr
 prefect server start
+
+# 04 - Deployment
+# conda create --name my_deployment-fixed python=3.10
+# conda activate my_deployment-fixed
+
+cd 04-deployment/homework
+pip install -r ./requirements.txt
+jupyter notebook
+# mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./artifacts_local
