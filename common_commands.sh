@@ -28,3 +28,13 @@ cd 04-deployment/homework
 pip install -r ./requirements.txt
 jupyter notebook
 # mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./artifacts_local
+
+# 05 - Monitoring
+# conda create --name monitoring python=3.11
+# conda activate monitoring
+
+cd 05-monitoring/homework
+# pip install -r ./requirements.txt
+docker-compose up --build
+jupyter notebook
+evindently ui
