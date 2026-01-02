@@ -5,6 +5,9 @@ import sys
 import pickle
 import pandas as pd
 
+def my_def():
+    return 1
+
 def read_data(filename, categorical):
     df = pd.read_parquet(filename)
     
