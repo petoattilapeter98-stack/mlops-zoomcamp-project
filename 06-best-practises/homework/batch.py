@@ -8,9 +8,11 @@ import pandas as pd
 def my_def():
     return 1
 
-def read_data(filename, categorical):
+def read_data(filename):
     df = pd.read_parquet(filename)
-    
+    return df
+
+def prepare_data(df, categorical):
     df['duration'] = df.tpep_dropoff_datetime - df.tpep_pickup_datetime
     df['duration'] = df.duration.dt.total_seconds() / 60
 
@@ -34,11 +36,12 @@ def main(year, month):
 
     categorical = ['PULocationID', 'DOLocationID']
 
-    df = read_data(input_file, categorical)
-    df['ride_id'] = f'{year:04d}/{month:02d}_' + df.index.astype('str')
+    df = read_data(input_file)
+    df_transformed = prepare_data(df, categorical)
+    df_transformed['ride_id'] = f'{year:04d}/{month:02d}_' + df_transformed.index.astype('str')
 
 
-    dicts = df[categorical].to_dict(orient='records')
+    dicts = df_transformed[categorical].to_dict(orient='records')
     X_val = dv.transform(dicts)
     y_pred = lr.predict(X_val)
 
@@ -47,7 +50,7 @@ def main(year, month):
 
 
     df_result = pd.DataFrame()
-    df_result['ride_id'] = df['ride_id']
+    df_result['ride_id'] = df_transformed['ride_id']
     df_result['predicted_duration'] = y_pred
 
 

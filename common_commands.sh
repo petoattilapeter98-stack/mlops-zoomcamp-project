@@ -38,3 +38,8 @@ cd 05-monitoring/homework
 docker-compose up --build
 jupyter notebook
 evindently ui
+
+# 06 - best-practises
+cd 04-deployment/homework
+pipenv install
+pipenv install --dev pytest

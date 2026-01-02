@@ -1,10 +1,3 @@
-def test_dummy():
-    assert True
-
-def test_my_def():
-    import batch
-    assert batch.my_def() == 1
-
 def test_prepare_data():
     from datetime import datetime
     import pandas as pd
@@ -24,6 +17,9 @@ def test_prepare_data():
     df = pd.DataFrame(data, columns=columns)
     print(df)
 
+    categorical = ['PULocationID', 'DOLocationID']
+    df_prepared = batch.prepare_data(df, categorical)
+    print(df_prepared)
 
 
-
+test_prepare_data()
