@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  localstack:
+    container_name: localstack_main
+    image: localstack/localstack:latest
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Edge Port
+      - "127.0.0.1:4510-4559:4510-4559"  # External services port range
+    environment:
+      - SERVICES=s3                     # Explicitly enable S3 (optional, auto-enabled by default)
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "./volume:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
