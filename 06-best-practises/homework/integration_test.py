@@ -1,4 +1,6 @@
 import os
+import sys
+import pickle
 from datetime import datetime
 import pandas as pd
 
@@ -28,6 +30,16 @@ def make_prepared_df():
 
     return df
 
+def compute_pred_sum(df):
+        with open('model.bin', 'rb') as f:
+            dv, lr = pickle.load(f)
+
+        categorical = ['PULocationID', 'DOLocationID']
+        dicts = df[categorical].to_dict(orient='records')
+        X = dv.transform(dicts)
+        preds = lr.predict(X)
+        return float(preds.sum())
+
 
 def main():
     year = 2023
@@ -51,6 +63,12 @@ def main():
         storage_options=options,
     )
 
+    sum_pred = compute_pred_sum(df_input)
+    print('sum of predicted durations:', sum_pred)
+
+    cmd = f"{sys.executable} ./batch.py {year} {month}"
+    print('Running:', cmd)
+    os.system(cmd)
 
 if __name__ == '__main__':
     main()
