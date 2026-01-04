@@ -9,4 +9,4 @@ RUN pipenv install --system --deploy
 COPY [ "batch.py", "batch.py" ]
 COPY [ "model.bin", "model.bin" ]
 
-ENTRYPOINT [ "python", "batch.py" ]
+ENTRYPOINT [ "python", "integration_test.py" ]
